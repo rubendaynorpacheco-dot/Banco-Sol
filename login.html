@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Banco Sol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0f0f1a, #1a1a3a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .contenedor {
+            background: rgba(139, 92, 246, 0.25);
+            padding: 35px 25px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .logo { font-size: 45px; margin-bottom: 10px; }
+        h1 { color: white; font-size: 30px; margin-bottom: 5px; }
+        h2 { color: #ddd6fe; font-size: 20px; margin-bottom: 25px; }
+        .grupo-input { text-align: left; margin-bottom: 15px; }
+        label { color: #ddd6fe; display: block; margin-bottom: 6px; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 15px;
+        }
+        input::placeholder { color: #a78bfa; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-secundario {
+            background: transparent;
+            border: 1px solid #a78bfa;
+            color: #ddd6fe;
+            margin-top: 15px;
+        }
+        .oculto { display: none; }
+        .mensaje { margin-top: 12px; padding: 8px; border-radius: 6px; font-size: 14px; display: none; }
+        .exito { background: rgba(34,197,94,0.2); color: #86efac; display: block; }
+        .error { background: rgba(239,68,68,0.2); color: #fca5a5; display: block; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        
+        <div id="seccionLogin">
+            <div class="logo">☀️</div>
+            <h1>Banco Sol</h1>
+            <h2>Iniciar Sesión</h2>
+
+            <div class="grupo-input">
+                <label for="correo">Correo Electrónico:</label>
+                <input type="text" id="correo" placeholder="tucorreo@gmail.com">
+            </div>
+            <div class="grupo-input">
+                <label for="contrasena">Contraseña:</label>
+                <input type="password" id="contrasena" placeholder="Tu contraseña">
+            </div>
+            <button id="btnIngresar">Ingresar</button>
+            <button class="btn-secundario" id="btnMostrarRegistro">Crear cuenta nueva</button>
+            <div id="mensaje" class="mensaje"></div>
+        </div>
+
+        
+        <div id="seccionRegistro" class="oculto">
+            <div class="logo">☀️</div>
+            <h1>Banco Sol</h1>
+            <h2>Crear Cuenta Nueva</h2>
+            <div class="grupo-input">
+                <label for="nombreCompleto">Nombre Completo:</label>
+                <input type="text" id="nombreCompleto" placeholder="Tu nombre completo">
+            </div>
+            <div class="grupo-input">
+                <label for="nuevoCorreo">Correo Electrónico:</label>
+                <input type="text" id="nuevoCorreo" placeholder="tucorreo@gmail.com">
+            </div>
+            <div class="grupo-input">
+                <label for="nuevaContrasena">Contraseña:</label>
+                <input type="password" id="nuevaContrasena" placeholder="Crea una contraseña">
+            </div>
+            <button id="btnCrearCuenta">Guardar Cuenta</button>
+            <button class="btn-secundario" id="btnVolverLogin">← Volver al inicio</button>
+            <div id="mensajeRegistro" class="mensaje"></div>
+        </div>
+    </div>
+
+    <script>
+        const seccionLogin = document.getElementById('seccionLogin');
+        const seccionRegistro = document.getElementById('seccionRegistro');
+        const mensaje = document.getElementById('mensaje');
+        const mensajeRegistro = document.getElementById('mensajeRegistro');
+
+        document.getElementById('btnMostrarRegistro').onclick = () => {
+            seccionLogin.classList.add('oculto');
+            seccionRegistro.classList.remove('oculto');
+            limpiarMensajes();
+        };
+        document.getElementById('btnVolverLogin').onclick = () => {
+            seccionRegistro.classList.add('oculto');
+            seccionLogin.classList.remove('oculto');
+            limpiarMensajes();
+        };
+        function limpiarMensajes() {
+            mensaje.style.display = 'none';
+            mensajeRegistro.style.display = 'none';
+        }
+
+        function generarNumeroCuenta() {
+            const prefijo = '1000';
+            const numeroAleatorio = Math.floor(Math.random() * 90000000 + 10000000);
+            const cuentaFormateado = numeroAleatorio.toString().replace(/(\d{4})(\d{4})/, '$1-$2-');
+            return prefijo + '-' + cuentaFormateado.replace('-', '');
+        }
+
+
+        function obtenerCuentas() {
+            const datos = localStorage.getItem('cuentasBancoSol');
+            return datos ? JSON.parse(datos) : [];
+        }
+        function guardarCuenta(nombre, correo, contrasena) {
+            const cuentas = obtenerCuentas();
+            if (cuentas.some(c => c.correo === correo)) {
+                return { ok: false, msj: ' Este correo ya está registrado' };
+            }
+    
+            const numeroCuenta = generarNumeroCuenta();
+            cuentas.push({ nombre, correo, contrasena, numeroCuenta });
+            localStorage.setItem('cuentasBancoSol', JSON.stringify(cuentas));
+            return { ok: true, msj: '✅ ¡Cuenta creada con éxito!', numeroCuenta };
+        }
+        function iniciarSesion(correo, contrasena) {
+            const cuentas = obtenerCuentas();
+            const usuario = cuentas.find(c => c.correo === correo && c.contrasena === contrasena);
+            if (usuario) {
+                localStorage.setItem('sesionActiva', JSON.stringify(usuario));
+                
+                localStorage.setItem('numeroCuentaUsuario', usuario.numeroCuenta);
+                localStorage.setItem('nombreUsuario', usuario.nombre);
+                return true;
+            }
+            return false;
+        }
+
+        document.getElementById('btnCrearCuenta').onclick = () => {
+            const nombre = document.getElementById('nombreCompleto').value.trim();
+            const correo = document.getElementById('nuevoCorreo').value.trim();
+            const contrasena = document.getElementById('nuevaContrasena').value;
+
+            if (!nombre || !correo || !contrasena) {
+                mensajeRegistro.textContent = ' Completa todos los campos';
+                mensajeRegistro.className = 'mensaje error';
+                return;
+            }
+            const resultado = guardarCuenta(nombre, correo, contrasena);
+            mensajeRegistro.textContent = resultado.msj + (resultado.ok ? ` Cuenta: ${resultado.numeroCuenta}` : '');
+            mensajeRegistro.className = 'mensaje ' + (resultado.ok ? 'exito' : 'error');
+
+            if (resultado.ok) {
+                setTimeout(() => {
+                    document.getElementById('nombreCompleto').value = '';
+                    document.getElementById('nuevoCorreo').value = '';
+                    document.getElementById('nuevaContrasena').value = '';
+                    document.getElementById('btnVolverLogin').click();
+                }, 2000);
+            }
+        };
+
+        // Iniciar sesión
+        document.getElementById('btnIngresar').onclick = () => {
+            const correo = document.getElementById('correo').value.trim();
+            const contrasena = document.getElementById('contrasena').value;
+
+            if (!correo || !contrasena) {
+                mensaje.textContent = ' Completa todos los campos';
+                mensaje.className = 'mensaje error';
+                return;
+            }
+            if (iniciarSesion(correo, contrasena)) {
+                mensaje.textContent = ' ¡Bienvenido!';
+                mensaje.className = 'mensaje exito';
+                setTimeout(() => window.location.href = 'dashboard.html', 700);
+            } else {
+                mensaje.textContent = ' Correo o contraseña incorrectos';
+                mensaje.className = 'mensaje error';
+            }
+        };
+    </script>
+</body>
+</html>
